@@ -1,8 +1,9 @@
 """"
-Use this script to query with an LLM json files.
-1. Read in the json files 
-2. Create embeddings with Ollama's embedding model and store in ChromaDB
-3. Query with Ollama's LLM model
+Use this script to query json files.
+1. Read in the json files (docs)
+2. Create doc embeddings with Ollama's embedding model and store in ChromaDB
+3. Get the top matching docs
+4. Query with Ollama's LLM model using the context of the top matching docs
 """
 
 
@@ -63,13 +64,13 @@ for i in range(0, len(docs), BATCH_SIZE):
 
 print(f"Finished adding posts to ChromaDB.")
 
-"""
-4. Query with Ollama's LLM model "llama3:8b""
-"""
 
 def ask_question(question):
     query = question + " in my blog posts"
 
+    """
+    3. Get the top matching docs
+    """
     # Return the n most semantically similar posts
     results = collection.query(query_texts=[query], n_results=30)
 
@@ -79,7 +80,9 @@ def ask_question(question):
     # Build a prompt for the LLM
     prompt = f"Using my blog posts, answer the question:\n\n{query}\n\nContext:\n{context}"
 
-    # Ask your model the question with your context
+    """
+    4. Query with Ollama's LLM model "llama3:8b"
+    """
     response = ollama.chat(
         model="llama3:8b",
         messages=[{"role": "user", "content": prompt}]  
